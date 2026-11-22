@@ -11,8 +11,8 @@
   --latin-size: 16px;
   --trans-size: 15px;
 
-  /* Font Families */
-  --font-arabic: 'Amiri', 'Traditional Arabic', serif;
+  /* Font Families: Noto Naskh Arabic (Kemenag Official), Amiri, Scheherazade New */
+  --font-arabic: 'Noto Naskh Arabic', 'Traditional Arabic', 'Amiri', serif;
   --font-latin: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --font-serif: 'Lora', Georgia, serif;
 

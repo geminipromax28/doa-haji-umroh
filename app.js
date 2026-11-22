@@ -255,16 +255,21 @@ function renderDoaList() {
   initLucideIcons();
 }
 
-// 3. Audio Player Engine (Web Speech Synthesis & Voice Fallbacks)
-let synth = window.speechSynthesis;
-let currentUtterance = null;
+// 3. Smart Audio Player Engine (High-Fidelity Arabic Audio Stream + Web Speech Fallback)
+let synth = (typeof window !== 'undefined' && 'speechSynthesis' in window) ? window.speechSynthesis : null;
 let arabicVoices = [];
+let indonesianVoices = [];
 
 function setupAudioVoices() {
   if (!synth) return;
   function updateVoices() {
-    const voices = synth.getVoices();
-    arabicVoices = voices.filter(v => v.lang.startsWith('ar') || v.lang.includes('SA') || v.name.toLowerCase().includes('arabic'));
+    try {
+      const voices = synth.getVoices() || [];
+      arabicVoices = voices.filter(v => v.lang && (v.lang.startsWith('ar') || v.lang.includes('SA') || (v.name && v.name.toLowerCase().includes('arabic'))));
+      indonesianVoices = voices.filter(v => v.lang && (v.lang.startsWith('id') || v.lang.includes('ID') || (v.name && v.name.toLowerCase().includes('indonesia'))));
+    } catch (e) {
+      console.warn('Voice enumeration error:', e);
+    }
   }
   updateVoices();
   if (synth.onvoiceschanged !== undefined) {
@@ -272,117 +277,367 @@ function setupAudioVoices() {
   }
 }
 
+const SmartAudioEngine = {
+  audioElement: null,
+  activeDoa: null,
+  activeMode: null, // 'list' or 'worship'
+  chunks: [],
+  currentChunkIndex: 0,
+  isPlaying: false,
+  isPaused: false,
+  useFallbackSpeech: false,
+  preloader: null,
+
+  init() {
+    if (!this.audioElement && typeof document !== 'undefined') {
+      this.audioElement = document.createElement('audio');
+      this.audioElement.referrerPolicy = 'no-referrer';
+      this.audioElement.preload = 'auto';
+
+      this.audioElement.addEventListener('ended', () => this.handleChunkEnded());
+      this.audioElement.addEventListener('error', (e) => this.handleAudioError(e));
+    }
+    setupAudioVoices();
+  },
+
+  play(doa, mode = 'list') {
+    this.init();
+    this.stop(false);
+
+    this.activeDoa = doa;
+    this.activeMode = mode;
+    this.isPlaying = true;
+    this.isPaused = false;
+    this.useFallbackSpeech = false;
+
+    this.chunks = this.splitChunks(doa.arab);
+    this.currentChunkIndex = 0;
+
+    if (mode === 'list') {
+      state.audioActiveId = doa.id;
+      state.isPlaying = true;
+      state.currentRepeatCount = 1;
+      updateFloatingPlayer(doa);
+      renderDoaList();
+    } else {
+      state.worshipAudioPlaying = true;
+      state.worshipRepeatCount = 1;
+      updateWorshipAudioBtnState();
+    }
+
+    this.playCurrentChunk();
+  },
+
+  splitChunks(text, maxLen = 110) {
+    if (!text) return [''];
+    const clean = text.trim();
+    if (clean.length <= maxLen) return [clean];
+
+    const chunks = [];
+    const parts = clean.split(new RegExp('([،؛.!?\\n]+)'));
+    let buf = '';
+
+    for (let i = 0; i < parts.length; i++) {
+      const p = parts[i];
+      if ((buf + p).length <= maxLen) {
+        buf += p;
+      } else {
+        if (buf.trim()) chunks.push(buf.trim());
+        if (p.length <= maxLen) {
+          buf = p;
+        } else {
+          const words = p.split(' ');
+          let wbuf = '';
+          for (const w of words) {
+            if ((wbuf + ' ' + w).length <= maxLen) {
+              wbuf += (wbuf ? ' ' : '') + w;
+            } else {
+              if (wbuf.trim()) chunks.push(wbuf.trim());
+              wbuf = w;
+            }
+          }
+          buf = wbuf;
+        }
+      }
+    }
+    if (buf.trim()) chunks.push(buf.trim());
+    return chunks.length > 0 ? chunks : [clean];
+  },
+
+  playCurrentChunk() {
+    if (!this.isPlaying || this.isPaused) return;
+
+    if (this.currentChunkIndex >= this.chunks.length) {
+      this.handleRoundComplete();
+      return;
+    }
+
+    const chunk = this.chunks[this.currentChunkIndex];
+
+    if (this.useFallbackSpeech) {
+      this.speakChunkViaSpeech(chunk);
+      return;
+    }
+
+    try {
+      const url = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=ar&client=tw-ob&q=' + encodeURIComponent(chunk);
+      this.audioElement.src = url;
+      this.audioElement.playbackRate = state.audioSpeed;
+
+      const playPromise = this.audioElement.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          this.preloadNextChunk();
+        }).catch(err => {
+          console.warn('Audio tag play error, falling back to speech:', err);
+          this.fallbackToSpeech(chunk);
+        });
+      }
+    } catch (e) {
+      this.fallbackToSpeech(chunk);
+    }
+  },
+
+  preloadNextChunk() {
+    const nextIdx = this.currentChunkIndex + 1;
+    if (nextIdx < this.chunks.length && !this.useFallbackSpeech && typeof document !== 'undefined') {
+      try {
+        if (!this.preloader) {
+          this.preloader = document.createElement('audio');
+          this.preloader.referrerPolicy = 'no-referrer';
+          this.preloader.preload = 'auto';
+        }
+        this.preloader.src = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=ar&client=tw-ob&q=' + encodeURIComponent(this.chunks[nextIdx]);
+      } catch (e) {}
+    }
+  },
+
+  handleChunkEnded() {
+    if (!this.isPlaying || this.isPaused) return;
+    this.currentChunkIndex++;
+    if (this.currentChunkIndex < this.chunks.length) {
+      this.playCurrentChunk();
+    } else {
+      this.handleRoundComplete();
+    }
+  },
+
+  handleRoundComplete() {
+    const isWorship = this.activeMode === 'worship';
+    const currentCount = isWorship ? state.worshipRepeatCount : state.currentRepeatCount;
+    const targetRepeat = isWorship ? state.worshipAudioRepeat : state.audioRepeat;
+
+    if (currentCount < targetRepeat) {
+      if (isWorship) {
+        state.worshipRepeatCount++;
+      } else {
+        state.currentRepeatCount++;
+        const badge = document.getElementById('player-counter-badge');
+        if (badge) {
+          badge.textContent = 'Putaran ' + state.currentRepeatCount + ' dari ' + (state.audioRepeat === 999 ? '∞' : state.audioRepeat) + 'x';
+        }
+      }
+      this.currentChunkIndex = 0;
+      setTimeout(() => {
+        if (this.isPlaying && !this.isPaused) {
+          this.playCurrentChunk();
+        }
+      }, 700);
+    } else {
+      this.stop(true);
+    }
+  },
+
+  handleAudioError(e) {
+    console.warn('Audio stream error, switching to SpeechSynthesis fallback:', e);
+    const chunk = this.chunks[this.currentChunkIndex] || (this.activeDoa ? this.activeDoa.arab : '');
+    this.fallbackToSpeech(chunk);
+  },
+
+  fallbackToSpeech(chunk) {
+    this.useFallbackSpeech = true;
+    if (!synth) {
+      if (typeof showToast === 'function') showToast('Perangkat tidak dapat memutar suara.');
+      this.stop(true);
+      return;
+    }
+    this.speakChunkViaSpeech(chunk);
+  },
+
+  speakChunkViaSpeech(chunk) {
+    try {
+      synth.cancel();
+      if (synth.paused) {
+        synth.resume();
+      }
+
+      const voices = synth.getVoices() || [];
+      const arVoice = voices.find(v => v.lang && (v.lang.startsWith('ar') || v.lang.includes('SA') || (v.name && v.name.toLowerCase().includes('arabic'))));
+      
+      const utter = new SpeechSynthesisUtterance();
+      utter.rate = state.audioSpeed;
+
+      if (arVoice) {
+        utter.voice = arVoice;
+        utter.lang = arVoice.lang;
+        utter.text = chunk;
+      } else {
+        const idVoice = voices.find(v => v.lang && (v.lang.startsWith('id') || v.lang.includes('ID')));
+        if (idVoice) utter.voice = idVoice;
+        utter.lang = 'id-ID';
+        utter.text = (this.activeDoa && this.activeDoa.latin) ? this.activeDoa.latin : chunk;
+      }
+
+      if (typeof window !== 'undefined') {
+        window._activeUtterance = utter;
+      }
+
+      utter.onend = () => {
+        this.handleChunkEnded();
+      };
+      utter.onerror = (e) => {
+        console.warn('SpeechSynthesis error:', e);
+        this.stop(true);
+      };
+
+      synth.speak(utter);
+    } catch (err) {
+      console.error('All audio fallbacks failed:', err);
+      this.stop(true);
+    }
+  },
+
+  pause() {
+    this.isPaused = true;
+    if (this.audioElement) {
+      this.audioElement.pause();
+    }
+    if (synth) {
+      synth.pause();
+    }
+    if (this.activeMode === 'list') {
+      state.isPlaying = false;
+      renderDoaList();
+      const playBtn = document.getElementById('player-play-btn');
+      if (playBtn) playBtn.innerHTML = '<i data-lucide="play" class="w-5 h-5"></i>';
+    } else {
+      state.worshipAudioPlaying = false;
+      updateWorshipAudioBtnState();
+    }
+    initLucideIcons();
+  },
+
+  resume() {
+    this.isPaused = false;
+    if (this.activeMode === 'list') {
+      state.isPlaying = true;
+      renderDoaList();
+      const playBtn = document.getElementById('player-play-btn');
+      if (playBtn) playBtn.innerHTML = '<i data-lucide="pause" class="w-5 h-5"></i>';
+    } else {
+      state.worshipAudioPlaying = true;
+      updateWorshipAudioBtnState();
+    }
+    initLucideIcons();
+
+    if (this.useFallbackSpeech && synth) {
+      synth.resume();
+    } else if (this.audioElement && this.audioElement.src) {
+      this.audioElement.play().catch(() => this.playCurrentChunk());
+    } else {
+      this.playCurrentChunk();
+    }
+  },
+
+  stop(fullReset = true) {
+    this.isPlaying = false;
+    this.isPaused = false;
+    this.currentChunkIndex = 0;
+    this.chunks = [];
+
+    if (this.audioElement) {
+      try {
+        this.audioElement.pause();
+        this.audioElement.currentTime = 0;
+      } catch (e) {}
+    }
+    if (synth) {
+      try {
+        synth.cancel();
+      } catch (e) {}
+    }
+
+    if (fullReset) {
+      if (this.activeMode === 'list') {
+        state.isPlaying = false;
+        state.audioActiveId = null;
+        hideFloatingPlayer();
+        renderDoaList();
+      } else if (this.activeMode === 'worship') {
+        state.worshipAudioPlaying = false;
+        updateWorshipAudioBtnState();
+      }
+      initLucideIcons();
+    }
+  },
+
+  setSpeed(speed) {
+    state.audioSpeed = speed;
+    if (this.audioElement) {
+      this.audioElement.playbackRate = speed;
+    }
+    const label = document.getElementById('player-speed-label');
+    if (label) label.textContent = speed + 'x';
+    const wlabel = document.getElementById('worship-speed-label');
+    if (wlabel) wlabel.textContent = speed + 'x';
+  }
+};
+
 function playAudioDoa(id) {
   const doa = DATA_DOA.find(d => d.id === id);
   if (!doa) return;
 
-  // Jika sedang main doa yang sama, toggle pause/play
-  if (state.audioActiveId === id && state.isPlaying) {
-    pauseAudio();
-    return;
-  }
-
-  // Set doa baru
-  state.audioActiveId = id;
-  state.currentRepeatCount = 1;
-  speakDoa(doa);
-}
-
-function speakDoa(doa) {
-  if (!synth) {
-    alert('Browser Anda tidak mendukung fitur pemutar suara otomatis.');
-    return;
-  }
-
-  synth.cancel(); // Hentikan yang sebelumnya
-
-  const textToSpeak = doa.arab;
-  currentUtterance = new SpeechSynthesisUtterance(textToSpeak);
-  currentUtterance.lang = 'ar-SA';
-  currentUtterance.rate = state.audioSpeed;
-
-  if (arabicVoices.length > 0) {
-    currentUtterance.voice = arabicVoices[0];
-  }
-
-  currentUtterance.onstart = () => {
-    state.isPlaying = true;
-    updateFloatingPlayer(doa);
-    renderDoaList();
-  };
-
-  currentUtterance.onend = () => {
-    if (state.currentRepeatCount < state.audioRepeat) {
-      state.currentRepeatCount++;
-      setTimeout(() => {
-        if (state.isPlaying && state.audioActiveId === doa.id) {
-          speakDoa(doa);
-        }
-      }, 800);
+  if (state.audioActiveId === id && SmartAudioEngine.isPlaying) {
+    if (SmartAudioEngine.isPaused) {
+      SmartAudioEngine.resume();
     } else {
-      state.isPlaying = false;
-      renderDoaList();
-      hideFloatingPlayer();
+      SmartAudioEngine.pause();
     }
-  };
+    return;
+  }
 
-  currentUtterance.onerror = (e) => {
-    console.warn('Speech error:', e);
-    state.isPlaying = false;
-    renderDoaList();
-  };
-
-  synth.speak(currentUtterance);
+  SmartAudioEngine.play(doa, 'list');
 }
 
 function pauseAudio() {
-  if (synth && state.isPlaying) {
-    synth.cancel();
-    state.isPlaying = false;
-    renderDoaList();
-    const playBtn = document.getElementById('player-play-btn');
-    if (playBtn) playBtn.innerHTML = '<i data-lucide="play" class="w-5 h-5"></i>';
-    initLucideIcons();
-  }
+  SmartAudioEngine.pause();
 }
 
 function resumeAudio() {
   if (state.audioActiveId) {
-    const doa = DATA_DOA.find(d => d.id === state.audioActiveId);
-    if (doa) {
-      speakDoa(doa);
+    if (SmartAudioEngine.isPaused) {
+      SmartAudioEngine.resume();
+    } else {
+      const doa = DATA_DOA.find(d => d.id === state.audioActiveId);
+      if (doa) SmartAudioEngine.play(doa, 'list');
     }
   }
 }
 
 function stopAudio() {
-  if (synth) {
-    synth.cancel();
-    state.isPlaying = false;
-    state.audioActiveId = null;
-    hideFloatingPlayer();
-    renderDoaList();
-  }
+  SmartAudioEngine.stop(true);
 }
 
 function setAudioRepeat(count) {
   state.audioRepeat = count;
   const badge = document.getElementById('player-repeat-badge');
   if (badge) {
-    badge.textContent = count === 999 ? '∞' : `${count}x`;
+    badge.textContent = count === 999 ? '∞' : count + 'x';
   }
 }
 
 function setAudioSpeed(speed) {
-  state.audioSpeed = speed;
-  const label = document.getElementById('player-speed-label');
-  if (label) {
-    label.textContent = `${speed}x`;
-  }
-  if (state.isPlaying && state.audioActiveId) {
-    const doa = DATA_DOA.find(d => d.id === state.audioActiveId);
-    if (doa) speakDoa(doa);
-  }
+  SmartAudioEngine.setSpeed(speed);
 }
 
 function updateFloatingPlayer(doa) {
@@ -519,7 +774,7 @@ function openWorshipMode(type = 'thawaf') {
 
 function closeWorshipMode() {
   state.worshipModeActive = false;
-  stopWorshipAudio();
+  SmartAudioEngine.stop(true);
   releaseWakeLock();
   const modal = document.getElementById('worship-mode-modal');
   if (modal) {
@@ -539,63 +794,24 @@ function toggleWorshipAudio() {
   const activePrayer = getActiveWorshipPrayer();
   if (!activePrayer) return;
 
-  if (state.worshipAudioPlaying) {
-    stopWorshipAudio();
+  if (state.worshipAudioPlaying && SmartAudioEngine.isPlaying) {
+    if (SmartAudioEngine.isPaused) {
+      SmartAudioEngine.resume();
+    } else {
+      SmartAudioEngine.pause();
+    }
   } else {
-    state.worshipRepeatCount = 1;
-    playWorshipAudio(activePrayer);
+    SmartAudioEngine.play(activePrayer, 'worship');
   }
 }
 
 function playWorshipAudio(doa) {
-  if (!synth) {
-    alert('Browser Anda tidak mendukung fitur pemutar suara.');
-    return;
-  }
-  synth.cancel();
-
-  const textToSpeak = doa.arab;
-  currentUtterance = new SpeechSynthesisUtterance(textToSpeak);
-  currentUtterance.lang = 'ar-SA';
-  currentUtterance.rate = state.audioSpeed;
-
-  if (arabicVoices.length > 0) {
-    currentUtterance.voice = arabicVoices[0];
-  }
-
-  currentUtterance.onstart = () => {
-    state.worshipAudioPlaying = true;
-    updateWorshipAudioBtnState();
-  };
-
-  currentUtterance.onend = () => {
-    if (state.worshipAudioPlaying && state.worshipRepeatCount < state.worshipAudioRepeat) {
-      state.worshipRepeatCount++;
-      setTimeout(() => {
-        if (state.worshipAudioPlaying && state.worshipModeActive) {
-          playWorshipAudio(doa);
-        }
-      }, 1000);
-    } else {
-      state.worshipAudioPlaying = false;
-      updateWorshipAudioBtnState();
-    }
-  };
-
-  currentUtterance.onerror = () => {
-    state.worshipAudioPlaying = false;
-    updateWorshipAudioBtnState();
-  };
-
-  synth.speak(currentUtterance);
+  if (!doa) return;
+  SmartAudioEngine.play(doa, 'worship');
 }
 
 function stopWorshipAudio() {
-  if (synth) {
-    synth.cancel();
-  }
-  state.worshipAudioPlaying = false;
-  updateWorshipAudioBtnState();
+  SmartAudioEngine.stop(true);
 }
 
 function toggleWorshipAudioRepeat() {

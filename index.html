@@ -16,10 +16,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Doa Haji">
 
-  <!-- Fonts: Amiri & Scheherazade New (Arabic), Plus Jakarta Sans & Lora (Latin) -->
+  <!-- Fonts: Noto Naskh Arabic (Kemenag Official Standard), Amiri, Scheherazade New, Plus Jakarta Sans & Lora -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Scheherazade+New:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Scheherazade+New:wght@400;600;700&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -447,22 +447,30 @@
         <!-- Pilihan Font Tulisan Arab -->
         <div>
           <label class="text-xs font-bold uppercase tracking-wider text-[var(--text-subtle)] block mb-2">
-            Jenis Tulisan Arab
+            Jenis Khot Arab (Gaya Penulisan)
           </label>
-          <div class="grid grid-cols-2 gap-2">
+          <div class="grid grid-cols-3 gap-2">
+            <button 
+              onclick="applyArabicFont('\'Noto Naskh Arabic\', \'Traditional Arabic\', serif')"
+              class="p-2.5 rounded-xl border border-[var(--border-subtle)] text-right hover:border-[#2D4F38] text-sm"
+              title="Khot Resmi Standar Kemenag / Buku Panduan"
+            >
+              <div class="font-bold text-[11px] text-left mb-1 text-[#2D4F38] dark:text-[#93CFA9]">Kemenag (Buku)</div>
+              <span style="font-family: 'Noto Naskh Arabic', serif; font-size: 19px;">بِسْمِ اللَّهِ</span>
+            </button>
             <button 
               onclick="applyArabicFont('\'Amiri\', serif')"
-              class="p-3 rounded-xl border border-[var(--border-subtle)] text-right hover:border-[#2D4F38] text-sm"
+              class="p-2.5 rounded-xl border border-[var(--border-subtle)] text-right hover:border-[#2D4F38] text-sm"
             >
-              <div class="font-bold text-xs text-left mb-1">Amiri (Naskh Standar)</div>
-              <span style="font-family: 'Amiri', serif; font-size: 20px;">بِسْمِ اللَّهِ</span>
+              <div class="font-bold text-[11px] text-left mb-1">Amiri (Klasik)</div>
+              <span style="font-family: 'Amiri', serif; font-size: 19px;">بِسْمِ اللَّهِ</span>
             </button>
             <button 
               onclick="applyArabicFont('\'Scheherazade New\', serif')"
-              class="p-3 rounded-xl border border-[var(--border-subtle)] text-right hover:border-[#2D4F38] text-sm"
+              class="p-2.5 rounded-xl border border-[var(--border-subtle)] text-right hover:border-[#2D4F38] text-sm"
             >
-              <div class="font-bold text-xs text-left mb-1">Scheherazade (Jelas)</div>
-              <span style="font-family: 'Scheherazade New', serif; font-size: 20px;">بِسْمِ اللَّهِ</span>
+              <div class="font-bold text-[11px] text-left mb-1">Scheherazade</div>
+              <span style="font-family: 'Scheherazade New', serif; font-size: 19px;">بِسْمِ اللَّهِ</span>
             </button>
           </div>
         </div>
