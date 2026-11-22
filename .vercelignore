@@ -1,0 +1,5 @@
+# Ignore local node server and large assets on Vercel deployment
+server.js
+*.pdf
+node_modules
+.git
