@@ -1,0 +1,18 @@
+{
+  "name": "doa-haji-umroh",
+  "version": "1.0.0",
+  "description": "Website Doa & Zikir Manasik Haji & Umroh Kemenhaj",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "haji",
+    "umroh",
+    "doa",
+    "zikir",
+    "kemenhaj"
+  ],
+  "author": "",
+  "license": "ISC"
+}

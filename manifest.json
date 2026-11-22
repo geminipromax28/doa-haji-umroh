@@ -1,0 +1,18 @@
+{
+  "name": "Doa & Zikir Manasik Haji & Umroh",
+  "short_name": "Doa Haji",
+  "description": "Panduan resmi kumpulan doa dan zikir manasik haji & umroh lengkap dengan audio dan fitur tasbih.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F6F4EE",
+  "theme_color": "#2D4F38",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

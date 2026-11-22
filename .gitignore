@@ -1,0 +1,17 @@
+# Node modules
+node_modules/
+
+# Large PDF Files (exceeding GitHub / Vercel 100MB upload limits)
+*.pdf
+
+# Vercel & build cache
+.vercel/
+.output/
+dist/
+
+# Environment & OS
+.env
+.env.*
+.DS_Store
+Thumbs.db
+*.log

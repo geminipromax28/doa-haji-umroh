@@ -1,0 +1,226 @@
+/* 
+ * Style Sheet: Desain Hangat & Tenang (Warm Sand & Sacred Green)
+ * Didesain khusus agar tidak terkesan AI, tidak menyilaukan mata, 
+ * dan sangat nyaman dibaca oleh jemaah segala usia termasuk lansia.
+ */
+
+:root {
+  /* Ukuran font dinamis yang dapat diatur user */
+  --arabic-size: 28px;
+  --arabic-line-height: 2.2;
+  --latin-size: 16px;
+  --trans-size: 15px;
+
+  /* Font Families */
+  --font-arabic: 'Amiri', 'Traditional Arabic', serif;
+  --font-latin: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Lora', Georgia, serif;
+
+  /* Tema Warna: Warm Paper (Default yang adem dan menyejukkan) */
+  --bg-page: #F6F4EE;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #FAF8F3;
+  --bg-chip: #EDE8DE;
+  --bg-chip-active: #2D4F38;
+  --text-chip-active: #FFFFFF;
+
+  --border-subtle: #E4DED2;
+  --border-strong: #CFC7B7;
+
+  --text-main: #232B25;
+  --text-muted: #5C665F;
+  --text-subtle: #7F8B83;
+  --text-arabic: #18231C;
+  --text-latin: #334A3E;
+
+  --primary-green: #2D4F38;
+  --primary-green-hover: #223D2B;
+  --primary-green-light: #EBF2EC;
+  --accent-gold: #B38E46;
+  --accent-gold-soft: #F9F5EB;
+  
+  --shadow-card: 0 4px 16px rgba(45, 79, 56, 0.05), 0 1px 3px rgba(0,0,0,0.03);
+  --shadow-floating: 0 10px 30px rgba(35, 43, 37, 0.12);
+}
+
+/* Tema: Siang Bersih (Day Clean) */
+body.theme-clean {
+  --bg-page: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F1F5F9;
+  --bg-chip: #E2E8F0;
+  --bg-chip-active: #1E3A2F;
+  --border-subtle: #E2E8F0;
+  --border-strong: #CBD5E1;
+  --text-main: #0F172A;
+  --text-muted: #475569;
+  --text-arabic: #0F172A;
+  --text-latin: #1E3A2F;
+}
+
+/* Tema: Malam Ibadah (Night OLED / Dark) */
+body.theme-night {
+  --bg-page: #121614;
+  --bg-card: #1B211E;
+  --bg-card-subtle: #242C28;
+  --bg-chip: #2A332E;
+  --bg-chip-active: #4E8262;
+  --text-chip-active: #FFFFFF;
+  --border-subtle: #2D3832;
+  --border-strong: #3B4941;
+  --text-main: #EAEFEA;
+  --text-muted: #A3B3A7;
+  --text-subtle: #78897D;
+  --text-arabic: #F2F7F3;
+  --text-latin: #93CFA9;
+  --primary-green: #4E8262;
+  --primary-green-hover: #5DA077;
+  --primary-green-light: #202D25;
+  --accent-gold: #D4AF65;
+  --accent-gold-soft: #2B261A;
+  --shadow-card: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+/* Global Reset & Base */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  font-family: var(--font-latin);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Tipografi Arab */
+.font-arabic {
+  font-family: var(--font-arabic);
+  font-size: var(--arabic-size);
+  line-height: var(--arabic-line-height);
+  color: var(--text-arabic);
+  direction: rtl;
+  text-align: right;
+  word-spacing: 2px;
+}
+
+.font-latin-reading {
+  font-family: var(--font-latin);
+  font-size: var(--latin-size);
+  color: var(--text-latin);
+  line-height: 1.7;
+}
+
+.font-translation {
+  font-size: var(--trans-size);
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+/* Glass & Card Styles */
+.sacred-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.sacred-card:hover {
+  border-color: var(--border-strong);
+}
+
+/* Wave visualizer animation */
+.sound-wave-bar {
+  width: 3px;
+  height: 14px;
+  background-color: var(--primary-green);
+  border-radius: 2px;
+  animation: waveSound 1s infinite ease-in-out;
+}
+.sound-wave-bar:nth-child(2) { animation-delay: 0.2s; height: 18px; }
+.sound-wave-bar:nth-child(3) { animation-delay: 0.4s; height: 10px; }
+.sound-wave-bar:nth-child(4) { animation-delay: 0.1s; height: 22px; }
+
+@keyframes waveSound {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1.2); }
+}
+
+/* Tombol Aksesibilitas Khusus Lansia */
+.btn-touch-large {
+  min-height: 48px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+
+.btn-touch-large:active {
+  transform: scale(0.97);
+}
+
+/* Floating Audio Player */
+.floating-player {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 640px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  box-shadow: var(--shadow-floating);
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  padding: 14px 20px;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+/* Mode Ibadah (Tawaf-Sa'i Counter) */
+.worship-counter-btn {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 6px solid var(--accent-gold);
+  background: var(--primary-green);
+  color: #FFFFFF;
+  box-shadow: 0 12px 28px rgba(45, 79, 56, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.2s ease;
+  user-select: none;
+}
+
+.worship-counter-btn:active {
+  transform: scale(0.92);
+  background-color: var(--primary-green-hover);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-page);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}

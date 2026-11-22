@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>Doa & Zikir Manasik Haji & Umroh</title>
+  <meta name="description" content="Kumpulan doa dan zikir resmi ibadah haji dan umroh dengan teks Arab, Latin, Terjemahan, dan Audio Suara yang mudah dibaca oleh segala usia.">
+
+  <!-- Favicon Unik, Ramah dan Menyenangkan -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <link rel="shortcut icon" href="favicon.svg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2D4F38">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Doa Haji">
+
+  <!-- Fonts: Amiri & Scheherazade New (Arabic), Plus Jakarta Sans & Lora (Latin) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Scheherazade+New:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="pb-36 selection:bg-[#2D4F38] selection:text-white">
+
+  <!-- 1. HEADER UTAMA (Spiritual Warm Editorial) -->
+  <header class="sticky top-0 z-40 bg-[var(--bg-card)]/90 backdrop-blur-md border-b border-[var(--border-subtle)] shadow-xs">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-[#2D4F38] text-white flex items-center justify-center flex-shrink-0 shadow-inner">
+          <i data-lucide="compass" class="w-5 h-5 text-[#B38E46]"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-bold text-[var(--text-main)] leading-none">
+              Doa & Zikir Manasik Haji & Umroh
+            </h1>
+            <span class="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-[var(--accent-gold-soft)] text-[#B38E46] border border-[#B38E46]/30">
+              Kemenhaj
+            </span>
+          </div>
+          <p class="text-xs text-[var(--text-subtle)] mt-0.5">
+            Panduan Lengkap Sesuai Tuntunan Resmi
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Actions Header -->
+      <div class="flex items-center gap-2">
+        <!-- Quick Font Scale Button -->
+        <div class="hidden md:flex items-center bg-[var(--bg-chip)] rounded-xl p-1 border border-[var(--border-subtle)]">
+          <button onclick="changeFontSize(-1)" class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold hover:bg-[var(--bg-card)] transition-colors" title="Perkecil Font">
+            A-
+          </button>
+          <button onclick="applyFontSize(2)" class="px-2 h-8 rounded-lg flex items-center justify-center text-xs font-semibold hover:bg-[var(--bg-card)] transition-colors" title="Font Normal">
+            Reset
+          </button>
+          <button onclick="changeFontSize(1)" class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold hover:bg-[var(--bg-card)] transition-colors" title="Perbesar Font">
+            A+
+          </button>
+        </div>
+
+        <!-- Tombol Buka Pengaturan & Aksesibilitas Lengkap -->
+        <button 
+          onclick="toggleSettingsModal()" 
+          class="p-2.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] hover:bg-[var(--bg-chip)] text-[var(--text-muted)] transition-colors flex items-center gap-1.5 text-xs font-semibold"
+          title="Pengaturan Tampilan & Huruf"
+        >
+          <i data-lucide="sliders" class="w-4 h-4"></i>
+          <span class="hidden lg:inline">Tampilan</span>
+        </button>
+
+        <!-- Tombol Mode Thawaf & Mode Sa'i Berdampingan -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <button 
+            onclick="openWorshipMode('thawaf')" 
+            class="px-3 sm:px-3.5 py-2 rounded-xl bg-[#B38E46] hover:bg-[#9a7837] text-white font-bold text-xs sm:text-sm shadow-md shadow-[#B38E46]/20 transition-all flex items-center gap-1.5"
+            title="Buka Pendamping Putaran Thawaf"
+          >
+            <i data-lucide="rotate-cw" class="w-4 h-4 animate-spin-slow"></i>
+            <span>Mode Thawaf</span>
+          </button>
+
+          <button 
+            onclick="openWorshipMode('sai')" 
+            class="px-3 sm:px-3.5 py-2 rounded-xl bg-[#2D4F38] hover:bg-[#223D2B] text-white font-bold text-xs sm:text-sm shadow-md shadow-[#2D4F38]/20 transition-all flex items-center gap-1.5"
+            title="Buka Pendamping Perjalanan Sa'i"
+          >
+            <i data-lucide="footprints" class="w-4 h-4"></i>
+            <span>Mode Sa'i</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. HERO / PANDUAN RINGKAS RAMAH LANSIA -->
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 pt-5 pb-3">
+    <div class="bg-[var(--bg-card-subtle)] border border-[var(--border-subtle)] rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-sm sm:text-base font-bold text-[var(--text-main)] flex items-center gap-2">
+          <span>🌿</span> Panduan Resmi Doa & Zikir Manasik Haji & Umroh
+        </h2>
+        <p class="text-xs sm:text-sm text-[var(--text-muted)] mt-1">
+          Lengkap teks Arab bertasykid, pelafalan Latin yang jelas, terjemahan Indonesia, serta suara audio doa. Dilengkapi mode pendamping 7 putaran Thawaf & Sa'i dengan tasbih digital getar dan audio doa putaran.
+        </p>
+      </div>
+      <div class="flex items-center gap-2 flex-shrink-0 text-xs text-[var(--text-subtle)]">
+        <span class="px-3 py-1.5 rounded-lg bg-[var(--bg-chip)] font-medium flex items-center gap-1.5">
+          <i data-lucide="volume-2" class="w-3.5 h-3.5 text-[#B38E46]"></i> Ada Audio Doa
+        </span>
+        <span class="px-3 py-1.5 rounded-lg bg-[var(--bg-chip)] font-medium flex items-center gap-1.5">
+          <i data-lucide="smartphone" class="w-3.5 h-3.5 text-[#2D4F38]"></i> Anti Layar Mati
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. BAR PENCARIAN & KONTROL CEPAT -->
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 py-2">
+    <div class="relative">
+      <i data-lucide="search" class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-subtle)]"></i>
+      <input 
+        id="search-input"
+        type="text" 
+        placeholder="Cari doa (contoh: keluar rumah, talbiyah, tawaf putaran 1, sapu jagat, jamrah)..." 
+        class="w-full pl-12 pr-10 py-3.5 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-subtle)] focus:border-[#2D4F38] focus:ring-2 focus:ring-[#2D4F38]/20 text-sm sm:text-base text-[var(--text-main)] shadow-xs outline-none transition-all"
+      >
+      <button 
+        onclick="document.getElementById('search-input').value = ''; state.searchQuery = ''; renderDoaList();"
+        class="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--text-subtle)] hover:text-[var(--text-main)] p-1 text-xs"
+        title="Bersihkan Pencarian"
+      >
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- 4. PENGELOMPOKAN MENU / TAHAPAN IBADAH (Horizontally Scrollable) -->
+  <nav class="max-w-4xl mx-auto px-4 sm:px-6 py-3">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-subtle)]">
+        Tahapan Ibadah
+      </span>
+      <span id="total-doa-count" class="text-xs text-[var(--text-muted)] font-medium">
+        Memuat...
+      </span>
+    </div>
+    <div id="kategori-container" class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+      <!-- Diisi secara dinamis oleh JavaScript -->
+    </div>
+  </nav>
+
+  <!-- 5. DAFTAR KARTU DOA (Content Feed) -->
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+    <!-- List Kartu Doa -->
+    <div id="doa-list-container" class="space-y-6">
+      <!-- Diisi secara dinamis oleh JavaScript -->
+    </div>
+
+    <!-- Empty State jika pencarian tidak ditemukan -->
+    <div id="empty-state" class="hidden text-center py-16 sacred-card p-8">
+      <div class="w-16 h-16 rounded-full bg-[var(--bg-chip)] flex items-center justify-center mx-auto text-[var(--text-subtle)] mb-4">
+        <i data-lucide="search-x" class="w-8 h-8"></i>
+      </div>
+      <h3 class="text-lg font-bold text-[var(--text-main)]">Doa Tidak Ditemukan</h3>
+      <p class="text-sm text-[var(--text-muted)] mt-1 max-w-sm mx-auto">
+        Silakan coba dengan kata kunci lain, seperti "thawaf", "ihram", "keluar rumah", atau pilih kategori "Semua Doa".
+      </p>
+      <button 
+        onclick="setKategori('semua'); document.getElementById('search-input').value = ''; state.searchQuery = ''; renderDoaList();"
+        class="mt-4 px-5 py-2.5 rounded-xl bg-[#2D4F38] text-white text-xs font-semibold"
+      >
+        Tampilkan Semua Doa
+      </button>
+    </div>
+  </main>
+
+  <!-- 6. FLOATING AUDIO PLAYER BAR (Dapat Diatur Repeat & Kecepatan) -->
+  <aside id="floating-player" class="floating-player translate-y-40 opacity-0 pointer-events-none transition-all duration-300">
+    <div class="flex items-center justify-between gap-3">
+      <!-- Info Doa -->
+      <div class="min-w-0 flex-1">
+        <div class="flex items-center gap-2">
+          <span class="sound-wave-bar"></span>
+          <span class="sound-wave-bar"></span>
+          <span class="sound-wave-bar"></span>
+          <h4 id="player-title" class="text-sm sm:text-base font-bold text-[var(--text-main)] truncate">
+            Memuat Doa...
+          </h4>
+        </div>
+        <div class="flex items-center gap-2 mt-0.5">
+          <span id="player-category" class="text-xs text-[var(--text-subtle)] truncate">
+            Doa Manasik
+          </span>
+          <span class="text-xs text-[var(--border-strong)]">•</span>
+          <span id="player-counter-badge" class="text-xs font-semibold text-[#B38E46]">
+            Putaran 1 dari 1x
+          </span>
+        </div>
+      </div>
+
+      <!-- Kontrol Pemutar -->
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <!-- Repeat Button (1x / 3x / Loop) -->
+        <button 
+          onclick="setAudioRepeat(state.audioRepeat === 1 ? 3 : state.audioRepeat === 3 ? 999 : 1)"
+          class="px-2.5 py-1.5 rounded-lg border border-[var(--border-strong)] bg-[var(--bg-chip)] text-xs font-bold text-[var(--text-muted)] flex items-center gap-1"
+          title="Ulangi Doa (Sunnah 3x)"
+        >
+          <i data-lucide="repeat" class="w-3.5 h-3.5"></i>
+          <span id="player-repeat-badge">1x</span>
+        </button>
+
+        <!-- Speed Button (0.8x / 1.0x / 1.2x) -->
+        <button 
+          onclick="setAudioSpeed(state.audioSpeed === 1.0 ? 0.8 : state.audioSpeed === 0.8 ? 1.2 : 1.0)"
+          class="px-2.5 py-1.5 rounded-lg border border-[var(--border-strong)] bg-[var(--bg-chip)] text-xs font-bold text-[var(--text-muted)]"
+          title="Kecepatan Pelafalan (0.8x pelan untuk lansia)"
+        >
+          <span id="player-speed-label">1.0x</span>
+        </button>
+
+        <!-- Play / Pause Button -->
+        <button 
+          id="player-play-btn"
+          class="w-11 h-11 rounded-full bg-[#2D4F38] text-white flex items-center justify-center hover:bg-[#223D2B] transition-colors shadow-md"
+          title="Putar / Jeda"
+        >
+          <i data-lucide="play" class="w-5 h-5"></i>
+        </button>
+
+        <!-- Stop Button -->
+        <button 
+          id="player-stop-btn"
+          class="p-2 rounded-lg text-[var(--text-subtle)] hover:bg-[var(--bg-chip)] transition-colors"
+          title="Tutup Pemutar"
+        >
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 7. MODAL PENDAMPING LAPANGAN (MODE THAWAF & SA'I COMPANION) -->
+  <div id="worship-mode-modal" class="fixed inset-0 z-50 bg-[var(--bg-page)] overflow-y-auto hidden flex flex-col justify-between">
+    <!-- Header Mode Ibadah -->
+    <header class="p-4 sm:p-6 border-b border-[var(--border-subtle)] flex items-center justify-between bg-[var(--bg-card)]">
+      <div class="flex items-center gap-3">
+        <button onclick="closeWorshipMode()" class="p-2 rounded-xl border border-[var(--border-subtle)] text-[var(--text-muted)]">
+          <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </button>
+        <div>
+          <h2 id="worship-title" class="text-base sm:text-lg font-bold text-[var(--text-main)]">
+            Mode Pendamping Thawaf
+          </h2>
+          <div class="flex items-center gap-2 mt-0.5">
+            <span id="wakelock-badge" class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Layar Terjaga Nyala
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button 
+          onclick="applyFontSize(state.fontSizeLevel < 3 ? 3 : 1)" 
+          class="px-3 py-1.5 rounded-lg border border-[var(--border-strong)] text-xs font-bold"
+          title="Toggle Ukuran Huruf"
+        >
+          Ukuran Font
+        </button>
+      </div>
+    </header>
+
+    <!-- Konten Doa Putaran Aktif -->
+    <main class="max-w-2xl mx-auto w-full px-4 sm:px-6 py-6 flex-1 flex flex-col justify-center">
+      
+      <!-- Stepper Putaran 1 sampai 7 -->
+      <div class="mb-6">
+        <div class="text-center text-xs font-bold uppercase tracking-wider text-[var(--text-subtle)] mb-2">
+          Pilih Putaran
+        </div>
+        <div id="worship-stepper" class="flex items-center justify-center gap-2 sm:gap-3">
+          <!-- Stepper 1 - 7 di-generate via JS -->
+        </div>
+      </div>
+
+      <!-- Petunjuk Langkah -->
+      <div id="worship-guide" class="text-xs sm:text-sm text-center text-[#B38E46] font-semibold bg-[var(--accent-gold-soft)] p-3 rounded-xl border border-[#B38E46]/30 mb-4">
+        Petunjuk putaran...
+      </div>
+
+      <!-- Bar Pemutar Audio Khusus Mode Ibadah (Thawaf / Sa'i) -->
+      <div class="mb-5 flex items-center justify-between gap-3 bg-[var(--bg-card)] p-3.5 rounded-2xl border border-[var(--border-subtle)] shadow-xs">
+        <button 
+          id="worship-audio-btn"
+          onclick="toggleWorshipAudio()"
+          class="btn-touch-large flex-1 text-xs sm:text-sm py-2.5 px-4 rounded-xl border border-[var(--border-strong)] bg-[var(--bg-card-subtle)] text-[var(--text-main)] hover:bg-[var(--bg-chip)] font-bold transition-all flex items-center justify-center gap-2"
+        >
+          <i data-lucide="volume-2" class="w-4 h-4 text-[#B38E46]"></i>
+          <span id="worship-audio-label">Dengarkan Audio Doa Putaran 1</span>
+        </button>
+
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <button 
+            onclick="toggleWorshipAudioRepeat()"
+            class="px-3 py-2 rounded-xl border border-[var(--border-strong)] bg-[var(--bg-chip)] text-xs font-bold text-[var(--text-muted)] flex items-center gap-1"
+            title="Pengulangan Doa Putaran (Sunnah 3x)"
+          >
+            <i data-lucide="repeat" class="w-3.5 h-3.5"></i>
+            <span id="worship-repeat-label">1x</span>
+          </button>
+          <button 
+            onclick="toggleWorshipAudioSpeed()"
+            class="px-3 py-2 rounded-xl border border-[var(--border-strong)] bg-[var(--bg-chip)] text-xs font-bold text-[var(--text-muted)]"
+            title="Kecepatan Suara (0.8x pelan untuk lansia)"
+          >
+            <span id="worship-speed-label">1.0x</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Kartu Doa Besar (Sangat Mudah Dibaca Sambil Berjalan) -->
+      <div class="sacred-card p-6 sm:p-8 text-center my-auto">
+        <p id="worship-arab" class="font-arabic mb-6 text-right leading-loose select-text" style="font-size: var(--arabic-size);">
+          ...
+        </p>
+
+        <div class="my-4 pt-4 border-t border-[var(--border-subtle)] text-left">
+          <div class="text-xs font-bold uppercase tracking-wider text-[#2D4F38] dark:text-[#93CFA9] mb-1">
+            Pelafalan Latin:
+          </div>
+          <p id="worship-latin" class="font-latin-reading italic font-medium leading-relaxed">
+            ...
+          </p>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-dashed border-[var(--border-subtle)] text-left">
+          <div class="text-xs font-bold uppercase tracking-wider text-[var(--text-subtle)] mb-1">
+            Artinya:
+          </div>
+          <p id="worship-trans" class="font-translation">
+            ...
+          </p>
+        </div>
+      </div>
+
+      <!-- Doa Tambahan Putaran (Sapu Jagat / Lampu Hijau) -->
+      <div id="worship-extra-doa"></div>
+
+      <!-- Tombol Counter Tasbih Digital Besar (Ramah Jempol / Haptic Touch) -->
+      <div class="my-8 flex flex-col items-center justify-center">
+        <button 
+          onclick="incrementWorshipDzikir()"
+          class="worship-counter-btn"
+          title="Ketuk untuk menghitung zikir"
+        >
+          <span class="text-xs uppercase font-bold tracking-wider opacity-90">Ketuk Zikir</span>
+          <span id="worship-dzikir-num" class="text-4xl font-black my-1">0</span>
+          <span class="text-[10px] opacity-75">Getar Sentuh</span>
+        </button>
+        <span class="text-xs text-[var(--text-subtle)] mt-2">
+          Ketuk tombol bulat di atas setiap kali membaca zikir
+        </span>
+      </div>
+    </main>
+
+    <!-- Footer Mode Ibadah: Tombol Putaran Berikutnya -->
+    <footer class="p-4 sm:p-6 border-t border-[var(--border-subtle)] bg-[var(--bg-card)]">
+      <div class="max-w-2xl mx-auto flex items-center gap-3">
+        <button 
+          onclick="setWorshipRound(Math.max(1, state.worshipRound - 1))" 
+          class="px-4 py-3.5 rounded-xl border border-[var(--border-strong)] text-sm font-semibold flex items-center gap-1"
+        >
+          <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          <span>Sebelumnya</span>
+        </button>
+        <button 
+          onclick="nextWorshipRound()" 
+          class="flex-1 py-3.5 rounded-xl bg-[#2D4F38] hover:bg-[#223D2B] text-white font-bold text-base shadow-md transition-all flex items-center justify-center gap-2"
+        >
+          <span>Lanjut ke Putaran Berikutnya</span>
+          <i data-lucide="chevron-right" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 8. MODAL PENGATURAN & AKSESIBILITAS DRAWER -->
+  <div id="settings-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
+    <div class="w-full max-w-lg bg-[var(--bg-card)] rounded-t-3xl sm:rounded-2xl border border-[var(--border-strong)] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+      
+      <!-- Header Settings -->
+      <div class="p-5 border-b border-[var(--border-subtle)] flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="sliders" class="w-5 h-5 text-[#2D4F38]"></i>
+          <h3 class="font-bold text-base sm:text-lg text-[var(--text-main)]">
+            Pengaturan Tampilan & Huruf
+          </h3>
+        </div>
+        <button onclick="toggleSettingsModal()" class="p-2 rounded-lg text-[var(--text-subtle)] hover:bg-[var(--bg-chip)]">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Body Settings -->
+      <div class="p-5 space-y-6 overflow-y-auto">
+        
+        <!-- Pilihan Ukuran Font (Sangat Penting untuk Lansia) -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-xs font-bold uppercase tracking-wider text-[var(--text-subtle)]">
+              Ukuran Huruf Teks
+            </label>
+            <span id="font-scale-indicator" class="text-xs font-bold text-[#B38E46]">
+              Normal
+            </span>
+          </div>
+          <div class="grid grid-cols-4 gap-2">
+            <button onclick="applyFontSize(0)" class="py-2.5 rounded-xl border border-[var(--border-subtle)] hover:bg-[var(--bg-chip)] text-xs font-semibold">
+              Kecil
+            </button>
+            <button onclick="applyFontSize(1)" class="py-2.5 rounded-xl border border-[var(--border-subtle)] hover:bg-[var(--bg-chip)] text-xs font-semibold">
+              Sedang
+            </button>
+            <button onclick="applyFontSize(2)" class="py-2.5 rounded-xl border border-[var(--border-subtle)] hover:bg-[var(--bg-chip)] text-xs font-bold text-[#2D4F38]">
+              Besar
+            </button>
+            <button onclick="applyFontSize(3)" class="py-2.5 rounded-xl border border-[#B38E46] bg-[var(--accent-gold-soft)] text-xs font-extrabold text-[#B38E46]">
+              Lansia (42px)
+            </button>
+          </div>
+        </div>
+
+        <!-- Pilihan Font Tulisan Arab -->
+        <div>
+          <label class="text-xs font-bold uppercase tracking-wider text-[var(--text-subtle)] block mb-2">
+            Jenis Tulisan Arab
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <button 
+              onclick="applyArabicFont('\'Amiri\', serif')"
+              class="p-3 rounded-xl border border-[var(--border-subtle)] text-right hover:border-[#2D4F38] text-sm"
+            >
+              <div class="font-bold text-xs text-left mb-1">Amiri (Naskh Standar)</div>
+              <span style="font-family: 'Amiri', serif; font-size: 20px;">بِسْمِ اللَّهِ</span>
+            </button>
+            <button 
+              onclick="applyArabicFont('\'Scheherazade New\', serif')"
+              class="p-3 rounded-xl border border-[var(--border-subtle)] text-right hover:border-[#2D4F38] text-sm"
+            >
+              <div class="font-bold text-xs text-left mb-1">Scheherazade (Jelas)</div>
+              <span style="font-family: 'Scheherazade New', serif; font-size: 20px;">بِسْمِ اللَّهِ</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mode Tampilan Konten -->
+        <div>
+          <label class="text-xs font-bold uppercase tracking-wider text-[var(--text-subtle)] block mb-2">
+            Format Tampilan Konten
+          </label>
+          <div class="grid grid-cols-3 gap-2">
+            <button id="btn-mode-lengkap" onclick="applyViewMode('lengkap')" class="py-2.5 rounded-xl text-xs font-bold border border-[var(--border-subtle)]">
+              Arab + Latin + Arti
+            </button>
+            <button id="btn-mode-arab_saja" onclick="applyViewMode('arab_saja')" class="py-2.5 rounded-xl text-xs font-bold border border-[var(--border-subtle)]">
+              Arab Saja (Fokus)
+            </button>
+            <button id="btn-mode-latin_arti" onclick="applyViewMode('latin_arti')" class="py-2.5 rounded-xl text-xs font-bold border border-[var(--border-subtle)]">
+              Latin & Arti
+            </button>
+          </div>
+        </div>
+
+        <!-- Pilihan Tema Warna Nyaman Mata -->
+        <div>
+          <label class="text-xs font-bold uppercase tracking-wider text-[var(--text-subtle)] block mb-2">
+            Warna Tema (Eye-Comfort)
+          </label>
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="applyTheme('warm')" class="p-3 rounded-xl border border-[var(--border-strong)] bg-[#FAF8F3] text-stone-800 text-xs font-bold text-center">
+              🌾 Warm Paper
+            </button>
+            <button onclick="applyTheme('clean')" class="p-3 rounded-xl border border-[var(--border-subtle)] bg-white text-slate-900 text-xs font-bold text-center">
+              ☀️ Day Clean
+            </button>
+            <button onclick="applyTheme('night')" class="p-3 rounded-xl border border-stone-800 bg-[#121614] text-[#EAEFEA] text-xs font-bold text-center">
+              🌙 Night / Gelap
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Settings -->
+      <div class="p-4 border-t border-[var(--border-subtle)] bg-[var(--bg-card-subtle)] text-right">
+        <button onclick="toggleSettingsModal()" class="px-6 py-2.5 rounded-xl bg-[#2D4F38] text-white text-sm font-bold">
+          Selesai & Simpan
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 9. MODAL BACA LAYAR PENUH (PRACTICE MODAL) -->
+  <div id="practice-modal" class="fixed inset-0 z-50 bg-[var(--bg-page)] overflow-y-auto hidden flex flex-col justify-between">
+    <header class="p-4 sm:p-6 border-b border-[var(--border-subtle)] flex items-center justify-between bg-[var(--bg-card)]">
+      <div class="flex items-center gap-3">
+        <button onclick="closePracticeModal()" class="p-2 rounded-xl border border-[var(--border-subtle)] text-[var(--text-muted)]">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+        <div>
+          <h2 id="practice-title" class="text-base sm:text-xl font-bold text-[var(--text-main)]">Judul Doa</h2>
+        </div>
+      </div>
+      <button 
+        id="practice-audio-btn" 
+        class="px-4 py-2 rounded-xl bg-[#2D4F38] text-white text-xs font-semibold flex items-center gap-1.5"
+      >
+        <i data-lucide="volume-2" class="w-4 h-4"></i>
+        <span>Putar Suara</span>
+      </button>
+    </header>
+
+    <main class="max-w-2xl mx-auto w-full px-4 sm:px-6 py-10 flex-1 flex flex-col justify-center">
+      <div class="sacred-card p-6 sm:p-10 text-center my-auto">
+        <p id="practice-arab" class="font-arabic mb-8 text-right leading-loose select-text" style="font-size: calc(var(--arabic-size) * 1.15);">
+          ...
+        </p>
+
+        <div class="my-6 pt-5 border-t border-[var(--border-subtle)] text-left">
+          <div class="text-xs font-bold uppercase tracking-wider text-[#2D4F38] dark:text-[#93CFA9] mb-1">
+            Transliterasi Latin:
+          </div>
+          <p id="practice-latin" class="font-latin-reading italic font-medium leading-relaxed">
+            ...
+          </p>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-dashed border-[var(--border-subtle)] text-left">
+          <div class="text-xs font-bold uppercase tracking-wider text-[var(--text-subtle)] mb-1">
+            Terjemahan Arti:
+          </div>
+          <p id="practice-arti" class="font-translation">
+            ...
+          </p>
+          <div id="practice-sumber" class="mt-4 text-xs text-[var(--text-subtle)] italic">
+            ...
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 10. TOAST NOTIFICATION -->
+  <div 
+    id="toast-notification" 
+    class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-[var(--text-main)] text-[var(--bg-card)] px-5 py-3 rounded-2xl shadow-xl z-50 text-xs sm:text-sm font-semibold flex items-center gap-2 opacity-0 translate-y-10 pointer-events-none transition-all duration-300"
+  >
+    <i data-lucide="check-circle-2" class="w-4 h-4 text-[#B38E46]"></i>
+    <span id="toast-message">Pesan notifikasi</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="doa-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
