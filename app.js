@@ -395,24 +395,46 @@ const SmartAudioEngine = {
     }
 
     const item = list[this.currentWordIndex];
-    if (this.useFallbackSpeech) {
-      this.speakItemViaSpeech(item);
+
+    // ResponsiveVoice sebagai engine utama (Arabic Male, natural)
+    if (typeof responsiveVoice !== 'undefined') {
+      this.speakViaRV(item);
       return;
     }
 
+    // Fallback ke SpeechSynthesis
+    this.speakItemViaSpeech(item);
+  },
+
+  speakViaRV(item) {
+    if (!this.isPlaying || this.isPaused) return;
+    const engine = this;
     try {
-      const url = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=ar&client=tw-ob&q=' + encodeURIComponent(item);
-      this.audioElement.src = url;
-      this.audioElement.playbackRate = state.audioSpeed;
-      const promise = this.audioElement.play();
-      if (promise !== undefined) {
-        promise.catch(err => {
-          console.warn('Audio stream error, switching to speech fallback:', err);
-          this.fallbackToSpeech(item);
-        });
-      }
-    } catch (e) {
-      this.fallbackToSpeech(item);
+      responsiveVoice.cancel();
+      responsiveVoice.speak(item, 'Arabic Male', {
+        rate: Math.min(state.audioSpeed, 1.2),
+        pitch: 1,
+        volume: 1,
+        onend: function() {
+          if (!engine.isPlaying || engine.isPaused) return;
+          engine.currentWordIndex++;
+          const list2 = state.wordByWord ? engine.words : engine.chunks;
+          if (engine.currentWordIndex < list2.length) {
+            const delay = state.wordByWord ? state.wordDelay : 200;
+            engine.wordTimer = setTimeout(function() {
+              if (engine.isPlaying && !engine.isPaused) engine.playNext();
+            }, delay);
+          } else {
+            engine.handleRoundComplete();
+          }
+        },
+        onerror: function() {
+          console.warn('RV error, fallback SpeechSynthesis');
+          engine.speakItemViaSpeech(item);
+        }
+      });
+    } catch (err) {
+      this.speakItemViaSpeech(item);
     }
   },
 
@@ -461,10 +483,13 @@ const SmartAudioEngine = {
   },
 
   handleAudioError(e) {
-    console.warn('Audio stream error, switching to SpeechSynthesis fallback:', e);
-    const list = state.wordByWord ? this.words : this.chunks;
-    const item = list[this.currentWordIndex] || (this.activeDoa ? this.activeDoa.arab : '');
-    this.fallbackToSpeech(item);
+    // Audio element error diabaikan -- ResponsiveVoice adalah engine utama
+    // Fallback jika RV tidak tersedia
+    if (typeof responsiveVoice === 'undefined') {
+      const list = state.wordByWord ? this.words : this.chunks;
+      const item = list[this.currentWordIndex] || (this.activeDoa ? this.activeDoa.arab : '');
+      this.speakItemViaSpeech(item);
+    }
   },
 
   fallbackToSpeech(item) {
@@ -524,6 +549,9 @@ const SmartAudioEngine = {
     if (synth) {
       synth.pause();
     }
+    if (typeof responsiveVoice !== 'undefined') {
+      try { responsiveVoice.cancel(); } catch (e) {}
+    }
     if (this.activeMode === 'list') {
       state.isPlaying = false;
       renderDoaList();
@@ -549,13 +577,8 @@ const SmartAudioEngine = {
     }
     initLucideIcons();
 
-    if (this.useFallbackSpeech && synth) {
-      synth.resume();
-    } else if (this.audioElement && this.audioElement.paused && this.audioElement.src) {
-      this.audioElement.play().catch(() => this.playNext());
-    } else {
-      this.playNext();
-    }
+    // Resume dari kata terakhir
+    this.playNext();
   },
 
   stop(fullReset = true) {
@@ -578,6 +601,9 @@ const SmartAudioEngine = {
     }
     if (synth) {
       try { synth.cancel(); } catch (e) {}
+    }
+    if (typeof responsiveVoice !== 'undefined') {
+      try { responsiveVoice.cancel(); } catch (e) {}
     }
 
     if (fullReset) {
