@@ -511,6 +511,45 @@
           </div>
         </div>
 
+        <!-- Mode Pelafalan Suara -->
+        <div>
+          <label class="text-xs font-bold uppercase tracking-wider text-[var(--text-subtle)] block mb-2">
+            Mode Pelafalan Suara
+          </label>
+          <div class="grid grid-cols-2 gap-2 mb-3">
+            <button
+              id="btn-word-by-word-on"
+              onclick="applyWordByWord(true)"
+              class="p-3 rounded-xl border border-[#2D4F38] bg-[var(--accent-green-soft,#EAF3EC)] text-xs font-bold text-[#2D4F38] flex flex-col items-center gap-1"
+            >
+              <i data-lucide="type" class="w-4 h-4"></i>
+              Kata Per Kata
+              <span class="text-[10px] font-normal opacity-70">Lafal per kata + jeda</span>
+            </button>
+            <button
+              id="btn-word-by-word-off"
+              onclick="applyWordByWord(false)"
+              class="p-3 rounded-xl border border-[var(--border-subtle)] text-xs font-bold text-[var(--text-muted)] flex flex-col items-center gap-1"
+            >
+              <i data-lucide="play-circle" class="w-4 h-4"></i>
+              Alir Normal
+              <span class="text-[10px] font-normal opacity-70">Frase panjang sekaligus</span>
+            </button>
+          </div>
+          <!-- Jeda Antar Kata (hanya tampil saat mode Kata Per Kata aktif) -->
+          <div id="word-delay-panel">
+            <label class="text-xs font-semibold text-[var(--text-subtle)] block mb-1.5">
+              Jeda Antar Kata: <span id="word-delay-label" class="text-[#2D4F38] font-bold">450ms</span>
+            </label>
+            <div class="grid grid-cols-4 gap-1.5">
+              <button onclick="applyWordDelay(250)" class="py-2 rounded-lg border border-[var(--border-subtle)] text-xs font-semibold hover:bg-[var(--bg-chip)]">Cepat</button>
+              <button onclick="applyWordDelay(450)" class="py-2 rounded-lg border border-[#B38E46] bg-[var(--accent-gold-soft)] text-[#B38E46] text-xs font-bold">Normal</button>
+              <button onclick="applyWordDelay(700)" class="py-2 rounded-lg border border-[var(--border-subtle)] text-xs font-semibold hover:bg-[var(--bg-chip)]">Santai</button>
+              <button onclick="applyWordDelay(1000)" class="py-2 rounded-lg border border-[var(--border-subtle)] text-xs font-semibold hover:bg-[var(--bg-chip)]">Tartil</button>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- Footer Settings -->
