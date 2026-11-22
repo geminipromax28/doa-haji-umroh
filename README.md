@@ -32,17 +32,11 @@ Aplikasi web modern, bersih, dan ramah pengguna untuk memandu jamaah membaca doa
 Aplikasi ini adalah **100% Client-Side Web App** (HTML, Tailwind CSS CDN, Vanilla JS) yang sangat ringan, cepat, dan siap langsung di-deploy ke Vercel tanpa perlu setup build server rumit.
 
 ### Opsi 1: Deploy via GitHub (Paling Direkomendasikan)
-1. Buat repository baru di [GitHub](https://github.com/new).
-2. Hubungkan folder lokal ke GitHub repository Anda:
-   ```bash
-   git remote add origin https://github.com/USERNAME/REPO_NAME.git
-   git branch -M main
-   git push -u origin main
-   ```
-3. Buka dashboard [Vercel](https://vercel.com).
-4. Klik tombol **"Add New..."** -> **"Project"**.
-5. Pilih repository GitHub Anda, lalu klik **"Deploy"**.
-6. Website akan langsung aktif dalam hitungan detik dengan domain gratis `https://nama-project.vercel.app`!
+1. Buka dashboard [Vercel](https://vercel.com).
+2. Klik tombol **"Add New..."** -> **"Project"**.
+3. Pilih repository GitHub: **`geminipromax28/doa-haji-umroh`**.
+4. Klik **"Deploy"**.
+5. Website akan langsung aktif dalam hitungan detik dengan domain gratis `https://doa-haji-umroh.vercel.app`!
 
 ### Opsi 2: Deploy Cepat via Vercel CLI
 Jalankan perintah berikut di terminal:
