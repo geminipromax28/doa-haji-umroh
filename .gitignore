@@ -1,5 +1,9 @@
-# Node modules
+# Node modules & local test server
 node_modules/
+server.js
+local-server.js
+package.json
+package-lock.json
 
 # Large PDF Files (exceeding GitHub / Vercel 100MB upload limits)
 *.pdf
