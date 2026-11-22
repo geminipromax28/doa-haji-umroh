@@ -305,8 +305,20 @@ const SmartAudioEngine = {
   },
 
   /**
+   * Mengembalikan URL audio TTS:
+   * Menggunakan local proxy saat di localhost, atau direct Google TTS saat di production
+   */
+  getAudioUrl(text) {
+    const isLocal = typeof window !== 'undefined' && 
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    if (isLocal) {
+      return '/api/tts?q=' + encodeURIComponent(text);
+    }
+    return 'https://translate.google.com/translate_tts?ie=UTF-8&tl=ar&client=tw-ob&q=' + encodeURIComponent(text);
+  },
+
+  /**
    * Split teks Arab ke array kata (menjaga harakat, wasal, shadda, dll.)
-   * Membuang tanda baca non-kata Arab dan spasi berlebih
    */
   splitWords(text) {
     if (!text) return [];
@@ -319,14 +331,14 @@ const SmartAudioEngine = {
   },
 
   /**
-   * Fallback: split ke frasa pendek jika word-by-word gagal
+   * Fallback: split ke frasa pendek jika mode alir normal
    */
   splitChunks(text, maxLen = 110) {
     if (!text) return [''];
     const clean = text.trim();
     if (clean.length <= maxLen) return [clean];
     const chunks = [];
-    const parts = clean.split(new RegExp('([\u060C\u061B.!?\n]+)'));
+    const parts = clean.split(new RegExp('([\\u060C\\u061B.!?\\n]+)'));
     let buf = '';
     for (const p of parts) {
       if ((buf + p).length <= maxLen) {
@@ -396,45 +408,24 @@ const SmartAudioEngine = {
 
     const item = list[this.currentWordIndex];
 
-    // ResponsiveVoice sebagai engine utama (Arabic Male, natural)
-    if (typeof responsiveVoice !== 'undefined') {
-      this.speakViaRV(item);
+    if (this.useFallbackSpeech) {
+      this.speakItemViaSpeech(item);
       return;
     }
 
-    // Fallback ke SpeechSynthesis
-    this.speakItemViaSpeech(item);
-  },
-
-  speakViaRV(item) {
-    if (!this.isPlaying || this.isPaused) return;
-    const engine = this;
     try {
-      responsiveVoice.cancel();
-      responsiveVoice.speak(item, 'Arabic Male', {
-        rate: Math.min(state.audioSpeed, 1.2),
-        pitch: 1,
-        volume: 1,
-        onend: function() {
-          if (!engine.isPlaying || engine.isPaused) return;
-          engine.currentWordIndex++;
-          const list2 = state.wordByWord ? engine.words : engine.chunks;
-          if (engine.currentWordIndex < list2.length) {
-            const delay = state.wordByWord ? state.wordDelay : 200;
-            engine.wordTimer = setTimeout(function() {
-              if (engine.isPlaying && !engine.isPaused) engine.playNext();
-            }, delay);
-          } else {
-            engine.handleRoundComplete();
-          }
-        },
-        onerror: function() {
-          console.warn('RV error, fallback SpeechSynthesis');
-          engine.speakItemViaSpeech(item);
-        }
-      });
-    } catch (err) {
-      this.speakItemViaSpeech(item);
+      const url = this.getAudioUrl(item);
+      this.audioElement.src = url;
+      this.audioElement.playbackRate = state.audioSpeed;
+      const promise = this.audioElement.play();
+      if (promise !== undefined) {
+        promise.catch(err => {
+          console.warn('Audio stream error, switching to speech fallback:', err);
+          this.fallbackToSpeech(item);
+        });
+      }
+    } catch (e) {
+      this.fallbackToSpeech(item);
     }
   },
 
