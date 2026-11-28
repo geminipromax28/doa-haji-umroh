@@ -31,14 +31,14 @@
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="pb-36 selection:bg-[#2D4F38] selection:text-white">
+<body class="theme-clean pb-36 selection:bg-[#2D4F38] selection:text-white">
 
   <!-- 1. HEADER UTAMA (Spiritual Warm Editorial) -->
   <header class="sticky top-0 z-40 bg-[var(--bg-card)]/90 backdrop-blur-md border-b border-[var(--border-subtle)] shadow-xs">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3">
       
       <!-- Brand & Title -->
-      <div class="flex items-center gap-3">
+      <div onclick="goHome()" class="flex items-center gap-3 cursor-pointer group" title="Kembali ke Menu Utama">
         <div class="w-10 h-10 rounded-xl bg-[#2D4F38] text-white flex items-center justify-center flex-shrink-0 shadow-inner">
           <i data-lucide="compass" class="w-5 h-5 text-[#B38E46]"></i>
         </div>
@@ -107,7 +107,7 @@
   </header>
 
   <!-- 2. HERO / PANDUAN RINGKAS RAMAH LANSIA -->
-  <section class="max-w-4xl mx-auto px-4 sm:px-6 pt-5 pb-3">
+  <section id="hero-section" class="max-w-4xl mx-auto px-4 sm:px-6 pt-5 pb-3">
     <div class="bg-[var(--bg-card-subtle)] border border-[var(--border-subtle)] rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
         <h2 class="text-sm sm:text-base font-bold text-[var(--text-main)] flex items-center gap-2">
@@ -139,7 +139,7 @@
         class="w-full pl-12 pr-10 py-3.5 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-subtle)] focus:border-[#2D4F38] focus:ring-2 focus:ring-[#2D4F38]/20 text-sm sm:text-base text-[var(--text-main)] shadow-xs outline-none transition-all"
       >
       <button 
-        onclick="document.getElementById('search-input').value = ''; state.searchQuery = ''; renderDoaList();"
+        onclick="clearSearch()"
         class="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--text-subtle)] hover:text-[var(--text-main)] p-1 text-xs"
         title="Bersihkan Pencarian"
       >
@@ -148,23 +148,44 @@
     </div>
   </section>
 
-  <!-- 4. PENGELOMPOKAN MENU / TAHAPAN IBADAH (Horizontally Scrollable) -->
-  <nav class="max-w-4xl mx-auto px-4 sm:px-6 py-3">
-    <div class="flex items-center justify-between mb-2">
+  <!-- 4. MENU UTAMA: KUMPULAN DOA (Grid Card Besar 2 Kolom) -->
+  <nav id="menu-section" class="max-w-4xl mx-auto px-4 sm:px-6 py-3">
+    <div class="flex items-center justify-between mb-3">
       <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-subtle)]">
-        Tahapan Ibadah
+        Kumpulan Doa
       </span>
       <span id="total-doa-count" class="text-xs text-[var(--text-muted)] font-medium">
         Memuat...
       </span>
     </div>
-    <div id="kategori-container" class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+    <div id="kategori-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
       <!-- Diisi secara dinamis oleh JavaScript -->
     </div>
   </nav>
 
-  <!-- 5. DAFTAR KARTU DOA (Content Feed) -->
-  <main class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+  <!-- 4B. NAVIGASI AWAL HALAMAN DETAIL DOA -->
+  <div id="detail-nav-top" class="hidden max-w-4xl mx-auto px-4 sm:px-6 pt-3 pb-1">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-xs">
+      <button
+        onclick="goHome()"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--bg-chip)] hover:bg-[var(--border-subtle)] text-[var(--text-main)] font-bold text-xs sm:text-sm transition-colors self-start"
+      >
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <span>Kembali ke Menu Utama</span>
+      </button>
+      <div class="flex items-center justify-between sm:justify-end gap-2.5">
+        <h2 id="detail-chapter-title" class="text-sm sm:text-base font-bold text-[var(--text-main)]">
+          Judul Bab
+        </h2>
+        <span id="detail-chapter-count" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-[var(--primary-green-light)] text-[var(--primary-green)] flex-shrink-0">
+          0 Doa
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. DAFTAR KARTU DOA (Halaman Detail) -->
+  <main id="detail-main" class="hidden max-w-4xl mx-auto px-4 sm:px-6 py-4">
     <!-- List Kartu Doa -->
     <div id="doa-list-container" class="space-y-6">
       <!-- Diisi secara dinamis oleh JavaScript -->
@@ -177,13 +198,33 @@
       </div>
       <h3 class="text-lg font-bold text-[var(--text-main)]">Doa Tidak Ditemukan</h3>
       <p class="text-sm text-[var(--text-muted)] mt-1 max-w-sm mx-auto">
-        Silakan coba dengan kata kunci lain, seperti "thawaf", "ihram", "keluar rumah", atau pilih kategori "Semua Doa".
+        Silakan coba dengan kata kunci lain, seperti "thawaf", "ihram", "keluar rumah", atau kembali ke Menu Utama.
       </p>
       <button 
-        onclick="setKategori('semua'); document.getElementById('search-input').value = ''; state.searchQuery = ''; renderDoaList();"
-        class="mt-4 px-5 py-2.5 rounded-xl bg-[#2D4F38] text-white text-xs font-semibold"
+        onclick="goHome()"
+        class="mt-4 px-5 py-2.5 rounded-xl bg-[#2D4F38] text-white text-xs font-semibold inline-flex items-center gap-2"
       >
-        Tampilkan Semua Doa
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <span>Kembali ke Menu Utama</span>
+      </button>
+    </div>
+
+    <!-- 5B. NAVIGASI AKHIR HALAMAN DETAIL DOA -->
+    <div id="detail-nav-bottom" class="hidden mt-8 pt-6 border-t border-[var(--border-subtle)] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <button
+        onclick="goHome()"
+        class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-[var(--border-strong)] bg-[var(--bg-card)] hover:bg-[var(--bg-chip)] text-[var(--text-main)] font-bold text-sm transition-colors shadow-xs"
+      >
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <span>Kembali ke Menu Utama</span>
+      </button>
+      <button
+        id="btn-next-chapter"
+        onclick="goToNextChapter()"
+        class="hidden inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#2D4F38] hover:bg-[#223D2B] text-white font-bold text-sm transition-colors shadow-sm"
+      >
+        <span id="next-chapter-label">Bab Berikutnya</span>
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
       </button>
     </div>
   </main>

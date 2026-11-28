@@ -5,7 +5,7 @@
 
 // State Aplikasi
 const state = {
-  kategoriAktif: 'semua',
+  kategoriAktif: null, // null = Menu Utama (Kumpulan Doa), string = ID Bab di Halaman Detail
   searchQuery: '',
   favoritList: JSON.parse(localStorage.getItem('haji_doa_favorit') || '[]'),
   
@@ -13,7 +13,7 @@ const state = {
   fontSizeLevel: parseInt(localStorage.getItem('haji_font_level') || '2'), // 0: Kecil, 1: Sedang, 2: Besar, 3: Ekstra Besar (Lansia)
   fontArabic: localStorage.getItem('haji_font_arabic') || "'Amiri', serif",
   viewMode: localStorage.getItem('haji_view_mode') || 'lengkap', // 'lengkap', 'arab_saja', 'latin_arti'
-  theme: localStorage.getItem('haji_theme') || 'warm', // 'warm', 'clean', 'night'
+  theme: localStorage.getItem('haji_theme_v2') || 'clean', // 'clean' (Day Clean default), 'warm', 'night'
   
   // Audio State
   audioActiveId: null,
@@ -50,8 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
   applyArabicFont(state.fontArabic);
   applyViewMode(state.viewMode);
 
-  renderKategoriChips();
-  renderDoaList();
+  syncViewFromHash(false);
   setupEventListeners();
   initLucideIcons();
   setupAudioVoices();
@@ -66,33 +65,145 @@ function initLucideIcons() {
   }
 }
 
-// 1. Render Menu Kategori / Bab
+// Metadata Tampilan Card Menu Utama (Kumpulan Doa)
+const KATEGORI_META = {
+  perjalanan: {
+    title: '01. Doa dalam Perjalanan',
+    desc: 'Doa sebelum keluar rumah, keluar rumah, kendaraan/pesawat, dan tiba di tujuan',
+    iconBg: 'bg-sky-50 dark:bg-sky-950/50',
+    iconColor: 'text-sky-600'
+  },
+  ihram: {
+    title: '02. Niat & Ihram',
+    desc: 'Niat Umrah, niat Haji Tamattu\', Ifrad, Qiran, isytirat, dan doa setelah berihram',
+    iconBg: 'bg-emerald-50 dark:bg-emerald-950/50',
+    iconColor: 'text-emerald-700'
+  },
+  talbiyah: {
+    title: '03. Talbiyah & Salawat',
+    desc: 'Bacaan kalimat Talbiyah resmi, salawat atas Nabi SAW, dan doa sesudahnya',
+    iconBg: 'bg-amber-50 dark:bg-amber-950/50',
+    iconColor: 'text-amber-600'
+  },
+  makkah: {
+    title: '04. Doa-doa di Makkah Al-Mukarramah',
+    desc: 'Memasuki Makkah, masuk/keluar masjid, melihat Ka\'bah, dan Maqam Ibrahim',
+    iconBg: 'bg-stone-100 dark:bg-stone-800',
+    iconColor: 'text-stone-700 dark:text-stone-200'
+  },
+  thawaf: {
+    title: '05. Doa Thawaf (Lengkap)',
+    desc: 'Doa putaran pertama hingga ketujuh, Rukun Yamani, Multazam, dan air Zamzam',
+    iconBg: 'bg-blue-50 dark:bg-blue-950/50',
+    iconColor: 'text-blue-600'
+  },
+  sai: {
+    title: '06. Doa Sa\'i (Lengkap)',
+    desc: 'Doa di Bukit Shafa, perjalanan 1–7 Shafa–Marwah, pilar hijau, dan Bukit Marwah',
+    iconBg: 'bg-teal-50 dark:bg-teal-950/50',
+    iconColor: 'text-teal-600'
+  },
+  tahallul: {
+    title: '07. Doa Bercukur (Tahallul)',
+    desc: 'Doa ketika dan setelah mencukur atau menggunting rambut tahallul',
+    iconBg: 'bg-rose-50 dark:bg-rose-950/50',
+    iconColor: 'text-rose-600'
+  },
+  arafah: {
+    title: '08. Doa Berangkat & Wukuf di Arafah',
+    desc: 'Perjalanan ke Arafah, masuk Arafah, Jabal Rahmah, zikir dan doa inti wukuf',
+    iconBg: 'bg-orange-50 dark:bg-orange-950/50',
+    iconColor: 'text-orange-500'
+  },
+  muzdalifah: {
+    title: '09. Doa di Muzdalifah',
+    desc: 'Talbiyah menuju Muzdalifah, Masy\'aril Haram, dan memungut batu kerikil',
+    iconBg: 'bg-indigo-50 dark:bg-indigo-950/50',
+    iconColor: 'text-indigo-600'
+  },
+  mina: {
+    title: '10. Doa dan Zikir Selama di Mina',
+    desc: 'Doa tiba di Mina, melontar Jamrah Aqabah, hari Tasyriq, dan zikir mabit',
+    iconBg: 'bg-lime-50 dark:bg-lime-950/50',
+    iconColor: 'text-lime-700'
+  },
+  thawaf_wada: {
+    title: '11. Doa Thawaf Wada\'',
+    desc: 'Doa thawaf perpisahan dan doa sesudahnya di depan pintu Ka\'bah',
+    iconBg: 'bg-slate-100 dark:bg-slate-800',
+    iconColor: 'text-slate-700 dark:text-slate-200'
+  },
+  madinah: {
+    title: '12. Ziarah Madinah & Masjid Nabawi',
+    desc: 'Masuk Madinah, Masjid Nabawi, salam di Makam Rasul, Raudhah, Baqi\', dan Uhud',
+    iconBg: 'bg-green-50 dark:bg-green-950/50',
+    iconColor: 'text-green-700'
+  },
+  kepulangan: {
+    title: '13. Doa Tiba di Kampung Halaman',
+    desc: 'Doa tiba di kampung halaman dan doa memasuki rumah setelah pulang haji/umrah',
+    iconBg: 'bg-cyan-50 dark:bg-cyan-950/50',
+    iconColor: 'text-cyan-700'
+  },
+  favorit: {
+    title: 'Doa Tersimpan (Favorit)',
+    desc: 'Kumpulan doa pilihan yang Anda tandai untuk akses cepat saat ibadah',
+    iconBg: 'bg-amber-50 dark:bg-amber-950/50',
+    iconColor: 'text-[#B38E46]'
+  }
+};
+
+function getVisibleKategoris() {
+  return KATEGORI_DOA.filter(kat => kat.id !== 'semua');
+}
+
+function getBabKategoris() {
+  return KATEGORI_DOA.filter(kat => kat.id !== 'semua' && kat.id !== 'favorit');
+}
+
+// 1. Render Menu Utama (Grid Card Besar 2 Kolom)
 function renderKategoriChips() {
   const container = document.getElementById('kategori-container');
+  const totalEl = document.getElementById('total-doa-count');
   if (!container) return;
 
-  container.innerHTML = KATEGORI_DOA.map(kat => {
-    const isActive = state.kategoriAktif === kat.id;
-    const count = kat.id === 'semua' 
-      ? DATA_DOA.length 
-      : kat.id === 'favorit'
-        ? state.favoritList.length
-        : DATA_DOA.filter(d => d.kategori === kat.id).length;
+  const visibleKats = getVisibleKategoris();
+  if (totalEl) {
+    totalEl.textContent = `${getBabKategoris().length} Bab • ${DATA_DOA.length} Doa`;
+  }
+
+  container.innerHTML = visibleKats.map(kat => {
+    const meta = KATEGORI_META[kat.id] || {
+      title: kat.label,
+      desc: '',
+      iconBg: 'bg-[var(--bg-chip)]',
+      iconColor: 'text-[#2D4F38]'
+    };
+    const count = kat.id === 'favorit'
+      ? state.favoritList.length
+      : DATA_DOA.filter(d => d.kategori === kat.id).length;
 
     return `
       <button 
-        onclick="setKategori('${kat.id}')"
-        class="flex-shrink-0 px-4 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center gap-2 border ${
-          isActive 
-            ? 'bg-[#2D4F38] text-white border-[#2D4F38] shadow-md shadow-[#2D4F38]/20' 
-            : 'bg-[var(--bg-card)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:border-[var(--border-strong)]'
-        }"
+        onclick="openKategori('${kat.id}')"
+        class="group text-left w-full p-4 sm:p-5 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[#2D4F38]/40 hover:shadow-md transition-all duration-200 flex items-start gap-4 shadow-xs"
       >
-        <i data-lucide="${kat.icon}" class="w-4 h-4"></i>
-        <span>${kat.label}</span>
-        <span class="text-xs px-2 py-0.5 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-[var(--bg-chip)] text-[var(--text-subtle)]'}">
-          ${count}
-        </span>
+        <div class="w-12 h-12 rounded-xl ${meta.iconBg} ${meta.iconColor} flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+          <i data-lucide="${kat.icon}" class="w-6 h-6"></i>
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-start justify-between gap-2">
+            <h3 class="text-sm sm:text-base font-bold text-[var(--text-main)] leading-snug group-hover:text-[#2D4F38] transition-colors">
+              ${meta.title}
+            </h3>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[var(--bg-chip)] text-[var(--text-muted)] flex-shrink-0">
+              ${count} Doa
+            </span>
+          </div>
+          <p class="text-xs sm:text-sm text-[var(--text-muted)] mt-1.5 leading-relaxed line-clamp-2">
+            ${meta.desc}
+          </p>
+        </div>
       </button>
     `;
   }).join('');
@@ -100,34 +211,127 @@ function renderKategoriChips() {
   initLucideIcons();
 }
 
-function setKategori(katId) {
+function openKategori(katId, updateHash = true) {
   state.kategoriAktif = katId;
-  renderKategoriChips();
-  renderDoaList();
-  // Scroll smooth ke atas daftar doa
-  const listEl = document.getElementById('doa-list-container');
-  if (listEl) {
-    listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (updateHash && typeof window !== 'undefined') {
+    window.location.hash = '#bab/' + katId;
+  }
+  renderAppView();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goHome(updateHash = true) {
+  state.kategoriAktif = null;
+  state.searchQuery = '';
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) searchInput.value = '';
+  if (updateHash && typeof window !== 'undefined') {
+    window.location.hash = '#menu';
+  }
+  renderAppView();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function clearSearch() {
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) searchInput.value = '';
+  state.searchQuery = '';
+  renderAppView();
+}
+
+function goToNextChapter() {
+  const babs = getBabKategoris();
+  const idx = babs.findIndex(k => k.id === state.kategoriAktif);
+  if (idx >= 0 && idx + 1 < babs.length) {
+    openKategori(babs[idx + 1].id);
   }
 }
 
-// 2. Render List Doa
+function syncViewFromHash(shouldScroll = false) {
+  const hash = (typeof window !== 'undefined' ? window.location.hash : '') || '';
+  if (hash.startsWith('#bab/')) {
+    const katId = hash.slice(5);
+    const exists = getVisibleKategoris().some(k => k.id === katId);
+    if (exists) {
+      state.kategoriAktif = katId;
+    } else {
+      state.kategoriAktif = null;
+    }
+  } else {
+    state.kategoriAktif = null;
+  }
+  renderAppView();
+  if (shouldScroll) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function setKategori(katId) {
+  if (katId === 'semua' || !katId) {
+    goHome();
+  } else {
+    openKategori(katId);
+  }
+}
+
+function renderAppView() {
+  const isSearching = state.searchQuery.trim() !== '';
+  const isDetail = state.kategoriAktif !== null || isSearching;
+
+  const heroSection = document.getElementById('hero-section');
+  const menuSection = document.getElementById('menu-section');
+  const detailNavTop = document.getElementById('detail-nav-top');
+  const detailMain = document.getElementById('detail-main');
+  const detailNavBottom = document.getElementById('detail-nav-bottom');
+
+  if (isDetail) {
+    if (heroSection) heroSection.classList.add('hidden');
+    if (menuSection) menuSection.classList.add('hidden');
+    if (detailNavTop) detailNavTop.classList.remove('hidden');
+    if (detailMain) detailMain.classList.remove('hidden');
+  } else {
+    if (heroSection) heroSection.classList.remove('hidden');
+    if (menuSection) menuSection.classList.remove('hidden');
+    if (detailNavTop) detailNavTop.classList.add('hidden');
+    if (detailMain) detailMain.classList.add('hidden');
+    if (detailNavBottom) detailNavBottom.classList.add('hidden');
+    renderKategoriChips();
+    return;
+  }
+
+  renderDoaList();
+}
+
+// 2. Render List Doa (Halaman Detail / Hasil Pencarian)
 function renderDoaList() {
   const container = document.getElementById('doa-list-container');
   const emptyState = document.getElementById('empty-state');
+  const detailTitle = document.getElementById('detail-chapter-title');
+  const detailCount = document.getElementById('detail-chapter-count');
+  const detailNavBottom = document.getElementById('detail-nav-bottom');
+  const btnNextChapter = document.getElementById('btn-next-chapter');
+  const nextChapterLabel = document.getElementById('next-chapter-label');
   if (!container) return;
+
+  const isSearching = state.searchQuery.trim() !== '';
+  if (!isSearching && state.kategoriAktif === null) {
+    renderKategoriChips();
+    return;
+  }
 
   // Filter Data
   let filtered = DATA_DOA.filter(doa => {
-    // Filter Kategori
-    if (state.kategoriAktif === 'favorit') {
-      if (!state.favoritList.includes(doa.id)) return false;
-    } else if (state.kategoriAktif !== 'semua') {
-      if (doa.kategori !== state.kategoriAktif) return false;
+    // Jika sedang mencari kata kunci, cari lintas semua bab (atau di dalam bab jika sedang di detail? Lintas semua bab lebih membantu!)
+    if (!isSearching) {
+      if (state.kategoriAktif === 'favorit') {
+        if (!state.favoritList.includes(doa.id)) return false;
+      } else if (state.kategoriAktif) {
+        if (doa.kategori !== state.kategoriAktif) return false;
+      }
     }
 
     // Filter Search
-    if (state.searchQuery.trim() !== '') {
+    if (isSearching) {
       const q = state.searchQuery.toLowerCase();
       const matchJudul = doa.judul.toLowerCase().includes(q);
       const matchLatin = doa.latin.toLowerCase().includes(q);
@@ -140,18 +344,45 @@ function renderDoaList() {
     return true;
   });
 
-  const countEl = document.getElementById('total-doa-count');
-  if (countEl) {
-    countEl.textContent = `${filtered.length} dari ${DATA_DOA.length} Doa Ditampilkan`;
+  if (detailTitle) {
+    if (isSearching) {
+      detailTitle.textContent = `Hasil Pencarian: "${state.searchQuery.trim()}"`;
+    } else {
+      const meta = KATEGORI_META[state.kategoriAktif];
+      detailTitle.textContent = meta ? meta.title : 'Daftar Doa';
+    }
+  }
+  if (detailCount) {
+    detailCount.textContent = `${filtered.length} Doa`;
   }
 
   if (filtered.length === 0) {
     container.innerHTML = '';
     emptyState.classList.remove('hidden');
+    if (detailNavBottom) detailNavBottom.classList.add('hidden');
+    initLucideIcons();
     return;
   }
 
   emptyState.classList.add('hidden');
+  if (detailNavBottom) detailNavBottom.classList.remove('hidden');
+
+  if (btnNextChapter && nextChapterLabel) {
+    if (!isSearching && state.kategoriAktif && state.kategoriAktif !== 'favorit') {
+      const babs = getBabKategoris();
+      const idx = babs.findIndex(k => k.id === state.kategoriAktif);
+      if (idx >= 0 && idx + 1 < babs.length) {
+        const nextKat = babs[idx + 1];
+        const nextMeta = KATEGORI_META[nextKat.id];
+        nextChapterLabel.textContent = `Bab Berikutnya: ${nextMeta ? nextMeta.title : nextKat.label}`;
+        btnNextChapter.classList.remove('hidden');
+      } else {
+        btnNextChapter.classList.add('hidden');
+      }
+    } else {
+      btnNextChapter.classList.add('hidden');
+    }
+  }
 
   container.innerHTML = filtered.map(doa => {
     const isFav = state.favoritList.includes(doa.id);
@@ -281,6 +512,10 @@ function setupAudioVoices() {
   }
 }
 
+// Semua doa menggunakan file voice over statis di folder audio/<id>.mp3
+// dengan fallback otomatis ke TTS jika file belum tersedia
+const USE_STATIC_VOICEOVERS = true;
+
 const SmartAudioEngine = {
   audioElement: null,
   activeDoa: null,
@@ -290,6 +525,7 @@ const SmartAudioEngine = {
   currentWordIndex: 0,
   isPlaying: false,
   isPaused: false,
+  isStaticAudio: false,
   useFallbackSpeech: false,
   wordTimer: null,
 
@@ -371,10 +607,14 @@ const SmartAudioEngine = {
     this.activeMode = mode;
     this.isPlaying = true;
     this.isPaused = false;
+    this.isStaticAudio = USE_STATIC_VOICEOVERS;
     this.useFallbackSpeech = false;
     this.currentWordIndex = 0;
 
-    if (state.wordByWord) {
+    if (this.isStaticAudio) {
+      this.words = [];
+      this.chunks = [];
+    } else if (state.wordByWord) {
       this.words = this.splitWords(doa.arab);
       this.chunks = [];
     } else {
@@ -399,6 +639,27 @@ const SmartAudioEngine = {
 
   playNext() {
     if (!this.isPlaying || this.isPaused) return;
+
+    if (this.isStaticAudio && this.activeDoa) {
+      try {
+        this.audioElement.src = 'audio/' + this.activeDoa.id + '.mp3';
+        this.audioElement.playbackRate = state.audioSpeed;
+        const promise = this.audioElement.play();
+        if (promise !== undefined) {
+          promise.catch(err => {
+            console.warn('Static voiceover play error:', err);
+            this.isStaticAudio = false;
+            this.words = this.splitWords(this.activeDoa.arab);
+            this.playNext();
+          });
+        }
+      } catch (e) {
+        this.isStaticAudio = false;
+        this.words = this.splitWords(this.activeDoa.arab);
+        this.playNext();
+      }
+      return;
+    }
 
     const list = state.wordByWord ? this.words : this.chunks;
     if (this.currentWordIndex >= list.length) {
@@ -431,6 +692,10 @@ const SmartAudioEngine = {
 
   handleWordEnded() {
     if (!this.isPlaying || this.isPaused) return;
+    if (this.isStaticAudio) {
+      this.handleRoundComplete();
+      return;
+    }
     this.currentWordIndex++;
 
     const list = state.wordByWord ? this.words : this.chunks;
@@ -474,13 +739,18 @@ const SmartAudioEngine = {
   },
 
   handleAudioError(e) {
-    // Audio element error diabaikan -- ResponsiveVoice adalah engine utama
-    // Fallback jika RV tidak tersedia
-    if (typeof responsiveVoice === 'undefined') {
-      const list = state.wordByWord ? this.words : this.chunks;
-      const item = list[this.currentWordIndex] || (this.activeDoa ? this.activeDoa.arab : '');
-      this.speakItemViaSpeech(item);
+    if (!this.isPlaying || this.isPaused) return;
+    if (this.isStaticAudio && this.activeDoa) {
+      console.warn('Static audio error, switching to TTS:', e);
+      this.isStaticAudio = false;
+      this.words = state.wordByWord ? this.splitWords(this.activeDoa.arab) : [];
+      this.chunks = state.wordByWord ? [] : this.splitChunks(this.activeDoa.arab);
+      this.playNext();
+      return;
     }
+    const list = state.wordByWord ? this.words : this.chunks;
+    const item = list[this.currentWordIndex] || (this.activeDoa ? this.activeDoa.arab : '');
+    this.fallbackToSpeech(item);
   },
 
   fallbackToSpeech(item) {
@@ -568,13 +838,18 @@ const SmartAudioEngine = {
     }
     initLucideIcons();
 
-    // Resume dari kata terakhir
+    // Resume dari posisi terakhir
+    if (this.isStaticAudio && this.audioElement && this.audioElement.src) {
+      this.audioElement.play().catch(() => this.playNext());
+      return;
+    }
     this.playNext();
   },
 
   stop(fullReset = true) {
     this.isPlaying = false;
     this.isPaused = false;
+    this.isStaticAudio = false;
     this.currentWordIndex = 0;
     this.words = [];
     this.chunks = [];
@@ -586,8 +861,8 @@ const SmartAudioEngine = {
     if (this.audioElement) {
       try {
         this.audioElement.pause();
-        this.audioElement.currentTime = 0;
-        this.audioElement.src = '';
+        this.audioElement.removeAttribute('src');
+        this.audioElement.load();
       } catch (e) {}
     }
     if (synth) {
@@ -803,8 +1078,8 @@ function applyViewMode(mode) {
 
 function applyTheme(themeName) {
   state.theme = themeName;
-  localStorage.setItem('haji_theme', themeName);
-  document.body.className = '';
+  localStorage.setItem('haji_theme_v2', themeName);
+  document.body.classList.remove('theme-clean', 'theme-night');
   if (themeName === 'clean') {
     document.body.classList.add('theme-clean');
   } else if (themeName === 'night') {
@@ -1162,9 +1437,14 @@ function setupEventListeners() {
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
       state.searchQuery = e.target.value;
-      renderDoaList();
+      renderAppView();
     });
   }
+
+  // Browser Back / Forward via hash
+  window.addEventListener('hashchange', () => {
+    syncViewFromHash(true);
+  });
 
   // Tombol Audio Player Bar
   const playBtn = document.getElementById('player-play-btn');
